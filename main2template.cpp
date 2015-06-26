@@ -24,7 +24,7 @@ void thresh_callback(int, void* );
 int main( int argc, char** argv )
 {
   /// Load source image and convert it to gray
-  src = imread( "C://Users//Manuela//Desktop//inf//vision por comptuador//proyectofinal//test2.jpg", 1 );
+  src = imread( "C://Users//Manuela//Desktop//inf//vision por comptuador//proyectofinal//test.jpg", 1 );
 
   
 
@@ -105,71 +105,81 @@ void thresh_callback(int, void* )
   string probando = "abcdefghijklmnopqrstuvwxyz";
   vector<Mat> abc;
   getdb(abc);
-  Mat ventana(50, 50, CV_8UC1);
+  Mat ventana(50, 50, CV_8UC1,256);
   Mat result;
+  int x;
 
-  for( int x = 0; x < drawing.rows; x++)
-  {
-		for( int y = 0; y < drawing.cols; y++)
-		{
-			if(drawing.at<uchar>(x,y) == 0) {
-
-				for( int i = 0; i < 25; i++){
-					for( int j = 0; j < 16; j++){
-						//IF (EN LA HORIZONTAL NO HAY MAS PUNTOS SE DESCARTA)
-						//vector<puntos> lista;
-						//buscarpuntos(lista,result);
-						ventana.at<uchar>(i,j) = drawing.at<uchar>(x+i,y+j);
-						drawing.at<uchar>(x+i,y+j)=255;
+  for(int h = 0 ; h < horizontales.size() ; h++ ){
+	  
+	  if(horizontales[h+1]-horizontales[h]>14)
+		continue;
+	  else{ 
+		  x=horizontales[h];
+		  h+=2;
+	   }
+	  for( int v = 0; v < verticales.size(); v=v+1)
+	  {
+					int y=verticales[v];
+				
+				
+					if(v+1 < verticales.size())
+						if((verticales[v+1]-y) <15) v++;
+				
+					cout<<"x,y="<<x<<","<<y<<endl;
+					for( int i = 0; i < 25; i++){
+						for( int j = 0; j < 16; j++){
+							//IF (EN LA HORIZONTAL NO HAY MAS PUNTOS SE DESCARTA)
+							//vector<puntos> lista;
+							//buscarpuntos(lista,result);
+							ventana.at<uchar>(i,j) = drawing.at<uchar>(x+i-3,y+j-3);
+							drawing.at<uchar>(x+i-3,y+j-3)=255;
+						}
 					}
-				}
 
-				//***********modificar desde aqui**************
-				double min, max;
-				double maxfinal = 0;
-				int word = 0;
+					//***********modificar desde aqui**************
+					double min, max;
+					int maxfinal = 0;
+					int word = 0;
 
-				imshow("ventana", ventana );
+					imshow("ventana", ventana );
 				
 
-				for(int t1=0 ;t1 < abc.size(); t1++){
-
-
-					matchTemplate( ventana, abc[t1], result, 4 );
-					minMaxLoc(result, &min, &max);
-					if(maxfinal <= max) {
-						maxfinal= max;
-						word=t1;
+					for(int t1=0 ;t1 < abc.size(); t1++){
+						matchTemplate( ventana, abc[t1], result, 4 );
+						minMaxLoc(result, &min, &max);
+						if(maxfinal <= max) {
+							maxfinal= max;
+							word=t1;
+						}
 					}
-				}
-				
-				//imshow("Imagen65", ventana );
-				imshow("Imagen5", result );
-				imshow("Imagen4", drawing );
+					
+					//imshow("Imagen65", ventana );
+					imshow("Imagen5", result );
+					imshow("Imagen4", drawing );
 
+					cout<<max<<endl;
+					if( maxfinal >= 0.8 ) 
+					{
+						string text = probando.substr(word,1);
+						int fontFace = FONT_HERSHEY_SIMPLEX;
+						double fontScale = 0.7;
+						int thickness = 2;  
+						cv::Point textOrg(y,x+10);
 
-				if( maxfinal >= 0.55 ) 
-				{
-					string text = probando.substr(word,1);
-					int fontFace = FONT_HERSHEY_SIMPLEX;
-					double fontScale = 0.7;
-					int thickness = 2;  
-					cv::Point textOrg(y,x+10);
+						cv::putText(src, text, textOrg, fontFace, fontScale, Scalar::all(255), thickness,8);
+						rectangle( src, Point(y-5,x-10), Point(y+15,x+30), color, 2, 8, 0 );
+					}
+					waitKey(0);
+			
+		
+	  }
 
-					cv::putText(src, text, textOrg, fontFace, fontScale, Scalar::all(255), thickness,8);
-					rectangle( src, Point(y-5,x-10), Point(y+15,x+30), color, 2, 8, 0 );
-				}
-				waitKey(0);
-			}
-		}
-  }
-
-  /// Show in a window
-  namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
-  imshow( "Contours", src );
-  imshow( "lineas", lineas );
+	  /// Show in a window
+	  namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
+	  imshow( "Contours", src );
+	  imshow( "lineas", lineas );
+	}
 }
-
 
 
 vector<int> buscarhorizontales(vector<Point2f> puntos){
